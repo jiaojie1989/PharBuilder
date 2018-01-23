@@ -1190,16 +1190,16 @@
         },
         {
             "name": "edgedesign/phpqa",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/EdgedesignCZ/phpqa.git",
-                "reference": "756ea0cdab576294bc01e5598084034f5fc2619a"
+                "reference": "c0c75b0dc021117a896be1fdb22aca976b63cc76"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/EdgedesignCZ/phpqa/zipball/756ea0cdab576294bc01e5598084034f5fc2619a",
-                "reference": "756ea0cdab576294bc01e5598084034f5fc2619a",
+                "url": "https://api.github.com/repos/EdgedesignCZ/phpqa/zipball/c0c75b0dc021117a896be1fdb22aca976b63cc76",
+                "reference": "c0c75b0dc021117a896be1fdb22aca976b63cc76",
                 "shasum": ""
             },
             "require": {
@@ -1229,6 +1229,7 @@
                 "jakub-onderka/php-parallel-lint": "Check PHP syntax",
                 "phpstan/phpstan": "PHP Static Analysis Tool - discover bugs in your code without running it!",
                 "phpunit/phpunit": "The PHP Unit Testing framework",
+                "sensiolabs/security-checker": "Check composer.lock for known security issues",
                 "vimeo/psalm": "A static analysis tool for finding errors in PHP applications"
             },
             "bin": [
@@ -1260,7 +1261,7 @@
                 "qa",
                 "static analysis"
             ],
-            "time": "2017-09-30T09:51:10+00:00"
+            "time": "2017-10-25T13:38:24+00:00"
         },
         {
             "name": "grasmash/yaml-expander",
