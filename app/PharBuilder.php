@@ -238,16 +238,10 @@ class PharBuilder
                 $this->addDir($subDir);
             }
         }
-        foreach ($composerInfo['files'] as $file) {
-            $this->addFile($file);
-        }
-        foreach ($composerInfo['stubs'] as $file) {
-            $this->addFakeFile($file);
-        }
-        // Add included directories
-        foreach ($this->getIncludes() as $dir) {
-            $this->addDir($dir);
-        }
+        $this->addPathToPhar($composerInfo['files'], 'addFile');
+        $this->addPathToPhar($composerInfo['stubs'], 'addFakeFile');
+        $this->addPathToPhar($this->getIncludes(), 'addDir');
+
         // Add the composer vendor dir
         $this->composerReader->removeFilesAutoloadFor($composerInfo['excludes']);
         $this->addDir($composerInfo['vendor'], $composerInfo['excludes']);
@@ -267,6 +261,31 @@ class PharBuilder
             'File size: ' . $size->formatBinary(filesize($this->getPharPath())?:0) . PHP_EOL .
             'Process duration: ' . $this->buildDuration($startTime, $endTime)
         ));
+    }
+
+    /**
+     * Add a list of path into the Phar
+     *
+     * @param array  $pathList     The list of path to add
+     * @param string $additionType The type (method name) of path's addition
+     *
+     * @return void
+     */
+    private function addPathToPhar($pathList, $additionType)
+    {
+        array_walk(
+            $pathList,
+            /**
+             * Add each path into the phar
+             *
+             * @param string $path
+             *
+             * @return void
+             */
+            function ($path) use ($additionType) {
+                $this->{$additionType}($path);
+            }
+        );
     }
 
     /**
