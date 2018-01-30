@@ -446,12 +446,16 @@ class PharBuilder
         if (null !== $this->archiveAll) {
             return $this->archiveAll;
         } else {
-            $output = '';
-            exec('ulimit -n', $output);
+            $output = exec('ulimit -n');
             $output = trim($output);
             if ($output > (count($this->filesCacheArray) + 3)) {
                 $this->archiveAll = true;
             } else {
+                $this->ioStyle->warning("Current files " 
+                        . (count($this->filesCacheArray) + 3) 
+                        . " while file limit is {$output}.\n"
+                        . "Set your open files to a larger one will largly imporve your performance.\n"
+                        . "See your open files num by typing `ulimit -n`.");
                 $this->archiveAll = false;
             }
             return $this->archiveAll;
@@ -465,13 +469,13 @@ class PharBuilder
                 $fileObjects[] = new \SplFileObject($path);
             }
             $this->ioStyle->write("\r\033[2K" . ' > Adding files to phar');
-            $this->phar->buildFromIterator(new \ArrayIterator($fileObjects));
+            $this->phar->buildFromIterator(new \ArrayIterator($fileObjects), './');
             $this->ioStyle->write(' <info>finished</info>');
             $this->ioStyle->write("\r\033[2K" . ' > Compressing phar files');
             switch($this->compression) {
                 case \Phar::BZ2:
                 case \Phar::GZ:
-                    $this->phar->compress($this->compression);
+                    $this->phar->compressFiles($this->compression);
                     break;
                 default:
             }
@@ -574,7 +578,7 @@ class PharBuilder
      */
     protected function addFile($filePath)
     {
-        $this->ioStyle->write("\r\033[2K" . ' > ' . $filePath);
+//        $this->ioStyle->write("\r\033[2K" . ' > ' . $filePath);
         
         $this->filesCacheArray[] = $filePath;
 
