@@ -73,6 +73,21 @@ class PharBuilder
      * @var Composer
      */
     protected $composerReader;
+    
+    /**
+     * If package can be archived only once (according to the allowed file descriptors num )
+     * 
+     * @var boolean
+     */
+    protected $archiveAll = null;
+    
+    /**
+     * If archiveAll params set to true, then addFile method will add file to this param
+     * thus archive all files only once.
+     * 
+     * @var array
+     */
+    protected $filesCacheArray = [];
 
     /**
      * List of equivalence for compression
@@ -385,6 +400,7 @@ class PharBuilder
         $this->addDir($composerInfo['vendor'], $composerInfo['excludes']);
         $this->addFile('composer.json');
         $this->addFile('composer.lock');
+        $this->archiveAll();
         $this->addStub();
 
         $this->ioStyle->success('All files added');
@@ -418,6 +434,55 @@ class PharBuilder
             $result[] = $unit['value'] . ' ' . $unit['unit'] . ($unit['value'] > 1 ? 's' : '');
         }
         return implode(', ', $result);
+    }
+    
+    /**
+     * If files can be archived only once.
+     * 
+     * @return boolean
+     */
+    protected function canFilesArchivedOnlyOnce() 
+    {
+        if (null !== $this->archiveAll) {
+            return $this->archiveAll;
+        } else {
+            $output = '';
+            exec('ulimit -n', $output);
+            $output = trim($output);
+            if ($output > (count($this->filesCacheArray) + 3)) {
+                $this->archiveAll = true;
+            } else {
+                $this->archiveAll = false;
+            }
+            return $this->archiveAll;
+        }
+    }
+    
+    protected function archiveAll() 
+    {
+        if ($this->canFilesArchivedOnlyOnce()) {
+            foreach($this->filesCacheArray as $path) {
+                $fileObjects[] = new \SplFileObject($path);
+            }
+            $this->ioStyle->write("\r\033[2K" . ' > Adding files to phar');
+            $this->phar->buildFromIterator(new \ArrayIterator($fileObjects));
+            $this->ioStyle->write(' <info>finished</info>');
+            $this->ioStyle->write("\r\033[2K" . ' > Compressing phar files');
+            switch($this->compression) {
+                case \Phar::BZ2:
+                case \Phar::GZ:
+                    $this->phar->compress($this->compression);
+                    break;
+                default:
+            }
+            $this->ioStyle->write(' <info>finished</info>');
+        } else {
+            foreach($this->filesCacheArray as $path) {
+                $this->phar->addFile($this->makePathRelative($path));
+                $this->ioStyle->write("\r\033[2K" . ' > ' . $path);
+                $this->compressFile($path);
+            }
+        }
     }
 
     /**
@@ -510,11 +575,13 @@ class PharBuilder
     protected function addFile($filePath)
     {
         $this->ioStyle->write("\r\033[2K" . ' > ' . $filePath);
+        
+        $this->filesCacheArray[] = $filePath;
 
         //Add the file
-        $this->phar->addFile($filePath);
+//        $this->phar->addFile($filePath);
         // Compress the file (see the reason of one file compressing just after)
-        $this->compressFile($filePath);
+//        $this->compressFile($filePath);
     }
 
     /**
