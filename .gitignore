@@ -6,3 +6,6 @@ vendor/
 
 ### JetBrains template
 .idea/
+
+### Netbeans Profiles
+nbproject/
